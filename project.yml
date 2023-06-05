@@ -27,10 +27,10 @@ packages:
     from: 0.1.0
   GiphyRepository:
     url: https://github.com/Yabby1997/GiphyRepository
-    from: 0.1.0
+    from: 0.1.1
   GIFPediaService:
     url: https://github.com/Yabby1997/GIFPediaService
-    from: 0.2.1
+    from: 0.2.2
 
 targets:
   GIFPedia:
@@ -71,4 +71,10 @@ targets:
         product: FLAnimatedImage
       - package: Nuke-FLAnimatedImage-Plugin
         product: NukeFLAnimatedImagePlugin
+      - package: GIFPediaService
+        product: GIFPediaService
+      - package: GiphyRepository
+        product: GiphyRepository
+      - package: GiphyURLSessionNetworkService
+        product: GiphyURLSessionNetworkService
 

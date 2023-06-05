@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 import Nuke
 import FLAnimatedImage
+import GIFPediaService
 
 final class GIFDetailViewController: UIViewController {
 
@@ -22,12 +23,12 @@ final class GIFDetailViewController: UIViewController {
 
     // MARK: - Properties
 
-    private let giphyEntity: GiphyEntity
+    private let gif: GIF
 
     // MARK: - Initializers
 
-    init(giphyEntity: GiphyEntity) {
-        self.giphyEntity = giphyEntity
+    init(gif: GIF) {
+        self.gif = gif
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -47,7 +48,7 @@ final class GIFDetailViewController: UIViewController {
     private func setupViews() {
         view.backgroundColor = .systemBackground
 
-        navigationItem.title = giphyEntity.title
+        navigationItem.title = gif.title
 
         view.addSubview(imageView)
         imageView.snp.makeConstraints { make in
@@ -56,8 +57,6 @@ final class GIFDetailViewController: UIViewController {
             make.height.equalTo(imageView.snp.width)
         }
 
-        if let url = giphyEntity.images.original {
-            Nuke.loadImage(with: url, into: imageView)
-        }
+        Nuke.loadImage(with: gif.originalUrl, into: imageView)
     }
 }
