@@ -22,12 +22,12 @@ packages:
   Nuke-FLAnimatedImage-Plugin:
     url: https://github.com/kean/Nuke-FLAnimatedImage-Plugin
     from: 8.0.0
-  GiphyURLSessionNetworkService:
-    url: https://github.com/Yabby1997/GiphyURLSessionNetworkService
-    from: 0.1.0
-  GiphyRepository:
-    url: https://github.com/Yabby1997/GiphyRepository
-    from: 0.1.1
+  SHURLSessionNetworkService:
+    url: https://github.com/Yabby1997/SHURLSessionNetworkService
+    from: 0.2.0
+  TenorRepository:
+    url: https://github.com/Yabby1997/TenorRepository
+    from: 0.1.2
   GIFPediaService:
     url: https://github.com/Yabby1997/GIFPediaService
     from: 0.2.2
@@ -73,8 +73,7 @@ targets:
         product: NukeFLAnimatedImagePlugin
       - package: GIFPediaService
         product: GIFPediaService
-      - package: GiphyRepository
-        product: GiphyRepository
-      - package: GiphyURLSessionNetworkService
-        product: GiphyURLSessionNetworkService
-
+      - package: TenorRepository
+        product: TenorRepository
+      - package: SHURLSessionNetworkService
+        product: SHURLSessionNetworkService
