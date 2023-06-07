@@ -30,9 +30,8 @@ final class GIFSearchViewController: UIViewController {
     // MARK: - Dependencies
 
     private let viewModel: GIFSearchViewModel
+    private var dataSource: UICollectionViewDiffableDataSource<Section, GIF>?
     private var cancellables: Set<AnyCancellable> = []
-    var dataSourceSnapshot = NSDiffableDataSourceSnapshot<Section, GIF>()
-    var diffableDataSource: UICollectionViewDiffableDataSource<Section, GIF>!
 
     // MARK: - Initializers
 
@@ -67,13 +66,7 @@ final class GIFSearchViewController: UIViewController {
         navigationItem.searchController = searchController
         navigationItem.title = "GIFPedia"
 
-        view.addSubview(collectionView)
-        collectionView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
-        }
-        collectionView.delegate = self
-
-        diffableDataSource = UICollectionViewDiffableDataSource<Section, GIF>(
+        dataSource = UICollectionViewDiffableDataSource<Section, GIF>(
             collectionView: collectionView
         ) { collectionView, indexPath, itemIdentifier in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GIFCell.identifier, for: indexPath)
@@ -81,22 +74,36 @@ final class GIFSearchViewController: UIViewController {
             cell.thumbnailUrl = itemIdentifier.thumbnailUrl
             return cell
         }
-
-        collectionView.dataSource = diffableDataSource
-
+        
+        view.addSubview(collectionView)
+        collectionView.snp.makeConstraints { make in
+            make.edges.equalTo(view.safeAreaLayoutGuide)
+        }
+        collectionView.delegate = self
+        collectionView.dataSource = dataSource
     }
 
     private func bind() {
         viewModel.gifsPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] gifs in
-                self?.dataSourceSnapshot = NSDiffableDataSourceSnapshot<Section, GIF>()
-                self?.dataSourceSnapshot.appendSections([.main])
-                self?.dataSourceSnapshot.appendItems(gifs)
-                self?.diffableDataSource.apply(self?.dataSourceSnapshot ?? NSDiffableDataSourceSnapshot(), animatingDifferences: true)
+                self?.applySnapshot(gifs)
+            }
+            .store(in: &cancellables)
+
+        viewModel.scrollToTopSignalPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
                 self?.collectionView.setContentOffset(.zero, animated: true)
             }
             .store(in: &cancellables)
+    }
+
+    private func applySnapshot(_ gifs: [GIF]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, GIF>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(gifs)
+        dataSource?.apply(snapshot, animatingDifferences: true)
     }
 }
 
@@ -104,7 +111,7 @@ final class GIFSearchViewController: UIViewController {
 
 extension GIFSearchViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        viewModel.queryText = searchController.searchBar.text ?? ""
+        viewModel.didUpdateQuery(text: searchController.searchBar.text)
     }
 }
 
@@ -113,6 +120,21 @@ extension GIFSearchViewController: UISearchBarDelegate {
         viewModel.didTapSearchButton()
     }
 }
+
+extension GIFSearchViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let gif = dataSource?.itemIdentifier(for: indexPath) else { return }
+        let gifDetailViewController = GIFDetailViewController(gif: gif)
+        navigationController?.pushViewController(gifDetailViewController, animated: true)
+    }
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        viewModel.didScrollTo(
+            bottomOffset: scrollView.contentSize.height - scrollView.frame.size.height - scrollView.contentOffset.y
+        )
+    }
+}
+
 
 extension GIFSearchViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(
@@ -138,13 +160,5 @@ extension GIFSearchViewController: UICollectionViewDelegateFlowLayout {
         minimumInteritemSpacingForSectionAt section: Int
     ) -> CGFloat {
         1.0
-    }
-}
-
-extension GIFSearchViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let gif = diffableDataSource.itemIdentifier(for: indexPath) else { return }
-        let gifDetailViewController = GIFDetailViewController(gif: gif)
-        navigationController?.pushViewController(gifDetailViewController, animated: true)
     }
 }

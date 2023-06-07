@@ -8,6 +8,7 @@
 import UIKit
 import GIFPediaService
 import TenorRepository
+//import GiphyRepository
 import SHURLSessionNetworkService
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -25,8 +26,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             networkService: networkService,
             apiKey: "AIzaSyAyqL6ZgYRj60GIMveovpSLqAsmyGp2BRE"
         )
-        let gifPediaService = GIFPediaService(gifRepository: tenorRepository)
-        let gifSearchViewModel = GIFSearchViewModel(gifPediaService: gifPediaService)
+        let gifPediaSearchService = GIFPediaSearchService(gifRepository: tenorRepository)
+//        let giphyRepository = GiphyRepository(
+//            networkService: networkService,
+//            apiKey: "7FckdoA95APjXjzIPCRm9he4wpaa6DFC"
+//        )
+//        let gifPediaSearchService = GIFPediaSearchService(gifRepository: giphyRepository)
+        let gifSearchViewModel = GIFSearchViewModel(searchService: gifPediaSearchService)
         let gifSearchViewController = GIFSearchViewController(viewModel: gifSearchViewModel)
         window.rootViewController = UINavigationController(rootViewController: gifSearchViewController)
         window.makeKeyAndVisible()

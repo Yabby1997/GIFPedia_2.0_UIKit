@@ -28,9 +28,12 @@ packages:
   TenorRepository:
     url: https://github.com/Yabby1997/TenorRepository
     from: 0.1.2
+#  GiphyRepository:
+#    url: https://github.com/Yabby1997/GiphyRepository
+#    from: 0.2.3
   GIFPediaService:
     url: https://github.com/Yabby1997/GIFPediaService
-    from: 0.2.2
+    from: 0.3.2
 
 targets:
   GIFPedia:
@@ -75,5 +78,7 @@ targets:
         product: GIFPediaService
       - package: TenorRepository
         product: TenorRepository
+#      - package: GiphyRepository
+#        product: GiphyRepository
       - package: SHURLSessionNetworkService
         product: SHURLSessionNetworkService

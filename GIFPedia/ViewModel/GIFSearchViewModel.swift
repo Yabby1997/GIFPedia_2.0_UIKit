@@ -10,20 +10,42 @@ import GIFPediaService
 import Combine
 
 final class GIFSearchViewModel {
-    private let gifPediaService: GIFPediaService
+    private let searchService: GIFPediaSearchService
 
-    var gifsPublisher: AnyPublisher<[GIF], Never> { gifPediaService.gifsPublisher }
-    @Published var queryText: String = ""
+    private var queryText: String = ""
 
-    init(gifPediaService: GIFPediaService) {
-        self.gifPediaService = gifPediaService
+    @Published private var isLoading = false
+    @Published private var scrollToTopSignal: Void?
+
+    var gifsPublisher: AnyPublisher<[GIF], Never> { searchService.gifsPublisher }
+    var isLoadingPublisher: AnyPublisher<Bool, Never> { $isLoading.eraseToAnyPublisher() }
+    var scrollToTopSignalPublisher: AnyPublisher<Void, Never> {
+        $scrollToTopSignal.compactMap { $0 }.eraseToAnyPublisher()
+    }
+
+    init(searchService: GIFPediaSearchService) {
+        self.searchService = searchService
+    }
+
+    func didUpdateQuery(text: String?) {
+        queryText = text ?? ""
     }
 
     func didTapSearchButton() {
-        gifPediaService.search(keyword: queryText)
+        Task {
+            isLoading = true
+            await searchService.search(keyword: queryText)
+            scrollToTopSignal = ()
+            isLoading = false
+        }
     }
 
-    func didScrollToEnd() {
-        gifPediaService.requestNext()
+    func didScrollTo(bottomOffset: CGFloat) {
+        guard !isLoading, !queryText.isEmpty, bottomOffset < 300 else { return }
+        Task {
+            isLoading = true
+            await searchService.requestNext()
+            isLoading = false
+        }
     }
 }
