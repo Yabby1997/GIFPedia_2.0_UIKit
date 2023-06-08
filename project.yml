@@ -39,7 +39,7 @@ packages:
     from: 0.1.0
   SHUserDefaultsPersistenceService:
     url: https://github.com/Yabby1997/SHUserDefaultsPersistenceService
-    from: 0.2.0
+    from: 0.2.1
 
 targets:
   GIFPedia:

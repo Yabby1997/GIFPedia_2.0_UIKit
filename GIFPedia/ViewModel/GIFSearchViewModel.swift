@@ -11,6 +11,7 @@ import Combine
 
 final class GIFSearchViewModel {
     private let searchService: GIFPediaSearchService
+    private let pinService: GIFFlagService
 
     private var queryText: String = ""
 
@@ -18,16 +19,10 @@ final class GIFSearchViewModel {
     @Published private var scrollToTopSignal: Void?
 
     var gifsPublisher: AnyPublisher<[GIF], Never> {
-        searchService.gifsPublisher
-            .map { entities in
-                entities.map { entity in
-                    GIF(
-                        id: entity.id,
-                        title: entity.title,
-                        thumbnailUrl: entity.thumbnailUrl,
-                        originalUrl: entity.originalUrl,
-                        isPinned: false
-                    )
+        Publishers.CombineLatest(searchService.gifsPublisher, pinService.flagged)
+            .map { searchedEntities, pinnedEntities in
+                searchedEntities.map { entity in
+                    entity.model(isPinned: pinnedEntities.contains(entity))
                 }
             }
             .eraseToAnyPublisher()
@@ -37,8 +32,9 @@ final class GIFSearchViewModel {
         $scrollToTopSignal.compactMap { $0 }.eraseToAnyPublisher()
     }
 
-    init(searchService: GIFPediaSearchService) {
+    init(searchService: GIFPediaSearchService, pinService: GIFFlagService) {
         self.searchService = searchService
+        self.pinService = pinService
     }
 
     func didUpdateQuery(text: String?) {
@@ -61,5 +57,27 @@ final class GIFSearchViewModel {
             await searchService.requestNext()
             isLoading = false
         }
+    }
+
+    func didLongTap(for gif: GIF) {
+        if gif.isPinned {
+            pinService.unflag(gif: gif.entity)
+        } else {
+            pinService.flag(gif: gif.entity)
+        }
+    }
+}
+
+// MARK: - Extensions
+
+extension GIF {
+    var entity: GIFEntity {
+        GIFEntity(id: id, title: title, thumbnailUrl: thumbnailUrl, originalUrl: originalUrl)
+    }
+}
+
+extension GIFEntity {
+    func model(isPinned: Bool) -> GIF {
+        GIF(id: id, title: title, thumbnailUrl: thumbnailUrl, originalUrl: originalUrl, isPinned: isPinned)
     }
 }

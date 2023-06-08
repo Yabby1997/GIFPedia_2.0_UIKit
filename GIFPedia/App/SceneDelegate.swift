@@ -10,6 +10,8 @@ import GIFPediaService
 import TenorRepository
 //import GiphyRepository
 import SHURLSessionNetworkService
+import PinnedGIFPersistence
+import SHUserDefaultsPersistenceService
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -32,7 +34,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 //            apiKey: "7FckdoA95APjXjzIPCRm9he4wpaa6DFC"
 //        )
 //        let gifPediaSearchService = GIFPediaSearchService(gifRepository: giphyRepository)
-        let gifSearchViewModel = GIFSearchViewModel(searchService: gifPediaSearchService)
+        let persistenceService = SHUserDefaultsPersistenceService()
+        let pinnedGIFPersistence = PinnedGIFPersistence(persistenceService: persistenceService)
+        let gifPinService = GIFFlagService(gifPersistence: pinnedGIFPersistence)
+        let gifSearchViewModel = GIFSearchViewModel(searchService: gifPediaSearchService, pinService: gifPinService)
         let gifSearchViewController = GIFSearchViewController(viewModel: gifSearchViewModel)
         window.rootViewController = UINavigationController(rootViewController: gifSearchViewController)
         window.makeKeyAndVisible()
