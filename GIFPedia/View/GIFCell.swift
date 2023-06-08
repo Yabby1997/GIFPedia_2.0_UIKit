@@ -87,6 +87,7 @@ final class GIFCell: UICollectionViewCell {
     }
 
     @objc private func didLongTap(_ sender: UIGestureRecognizer) {
+        guard sender.state == .ended else { return }
         longTapHandler?()
     }
 }

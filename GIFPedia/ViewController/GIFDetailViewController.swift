@@ -9,7 +9,6 @@ import UIKit
 import SnapKit
 import Nuke
 import FLAnimatedImage
-import GIFPediaService
 
 final class GIFDetailViewController: UIViewController {
 

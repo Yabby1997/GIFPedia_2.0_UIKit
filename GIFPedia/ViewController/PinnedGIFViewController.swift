@@ -1,5 +1,5 @@
 //
-//  GIFSearchViewController.swift
+//  PinnedGIFViewController.swift
 //  GIFPedia
 //
 //  Created by USER on 2023/06/05.
@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import Combine
 
-final class GIFSearchViewController: UIViewController {
+final class PinnedGIFViewController: UIViewController {
     enum Section: Hashable {
         case main
     }
@@ -24,17 +24,15 @@ final class GIFSearchViewController: UIViewController {
         return collectionView
     }()
 
-    private let searchController = UISearchController(searchResultsController: nil)
-
     // MARK: - Dependencies
 
-    private let viewModel: GIFSearchViewModel
+    private let viewModel: PinnedGIFViewModel
     private var dataSource: UICollectionViewDiffableDataSource<Section, GIF>?
     private var cancellables: Set<AnyCancellable> = []
 
     // MARK: - Initializers
 
-    init(viewModel: GIFSearchViewModel) {
+    init(viewModel: PinnedGIFViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -55,19 +53,11 @@ final class GIFSearchViewController: UIViewController {
         super.viewWillAppear(animated)
         viewModel.willAppear()
     }
-    
+
     // MARK: - Private Methods
 
     private func setupViews() {
         view.backgroundColor = .systemBackground
-
-        searchController.searchBar.placeholder = "GIF 검색"
-        searchController.hidesNavigationBarDuringPresentation = false
-        searchController.searchBar.showsCancelButton = false
-        searchController.searchBar.delegate = self
-        searchController.searchResultsUpdater = self
-
-        navigationItem.searchController = searchController
         navigationItem.title = "GIFPedia"
 
         dataSource = UICollectionViewDiffableDataSource<Section, GIF>(
@@ -82,7 +72,7 @@ final class GIFSearchViewController: UIViewController {
             }
             return cell
         }
-        
+
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints { make in
             make.edges.equalTo(view.safeAreaLayoutGuide)
@@ -98,13 +88,6 @@ final class GIFSearchViewController: UIViewController {
                 self?.applySnapshot(gifs)
             }
             .store(in: &cancellables)
-
-        viewModel.scrollToTopSignalPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.collectionView.setContentOffset(.zero, animated: true)
-            }
-            .store(in: &cancellables)
     }
 
     private func applySnapshot(_ gifs: [GIF]) {
@@ -117,34 +100,16 @@ final class GIFSearchViewController: UIViewController {
 
 // MARK: - Extensions
 
-extension GIFSearchViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        viewModel.didUpdateQuery(text: searchController.searchBar.text)
-    }
-}
-
-extension GIFSearchViewController: UISearchBarDelegate {
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        viewModel.didTapSearchButton()
-    }
-}
-
-extension GIFSearchViewController: UICollectionViewDelegate {
+extension PinnedGIFViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let gif = dataSource?.itemIdentifier(for: indexPath) else { return }
         let gifDetailViewController = GIFDetailViewController(gif: gif)
         navigationController?.pushViewController(gifDetailViewController, animated: true)
     }
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        viewModel.didScrollTo(
-            bottomOffset: scrollView.contentSize.height - scrollView.frame.size.height - scrollView.contentOffset.y
-        )
-    }
 }
 
 
-extension GIFSearchViewController: UICollectionViewDelegateFlowLayout {
+extension PinnedGIFViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(
         _ collectionView: UICollectionView,
         layout collectionViewLayout: UICollectionViewLayout,

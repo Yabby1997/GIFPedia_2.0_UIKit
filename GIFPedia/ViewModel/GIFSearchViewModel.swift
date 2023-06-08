@@ -37,6 +37,10 @@ final class GIFSearchViewModel {
         self.pinService = pinService
     }
 
+    func willAppear() {
+        pinService.reload()
+    }
+
     func didUpdateQuery(text: String?) {
         queryText = text ?? ""
     }
