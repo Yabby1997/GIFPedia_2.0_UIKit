@@ -17,7 +17,21 @@ final class GIFSearchViewModel {
     @Published private var isLoading = false
     @Published private var scrollToTopSignal: Void?
 
-    var gifsPublisher: AnyPublisher<[GIF], Never> { searchService.gifsPublisher }
+    var gifsPublisher: AnyPublisher<[GIF], Never> {
+        searchService.gifsPublisher
+            .map { entities in
+                entities.map { entity in
+                    GIF(
+                        id: entity.id,
+                        title: entity.title,
+                        thumbnailUrl: entity.thumbnailUrl,
+                        originalUrl: entity.originalUrl,
+                        isPinned: false
+                    )
+                }
+            }
+            .eraseToAnyPublisher()
+    }
     var isLoadingPublisher: AnyPublisher<Bool, Never> { $isLoading.eraseToAnyPublisher() }
     var scrollToTopSignalPublisher: AnyPublisher<Void, Never> {
         $scrollToTopSignal.compactMap { $0 }.eraseToAnyPublisher()
