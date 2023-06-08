@@ -68,10 +68,14 @@ final class GIFSearchViewController: UIViewController {
 
         dataSource = UICollectionViewDiffableDataSource<Section, GIF>(
             collectionView: collectionView
-        ) { collectionView, indexPath, itemIdentifier in
+        ) { collectionView, indexPath, gif in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GIFCell.identifier, for: indexPath)
             guard let cell = cell as? GIFCell else { return nil }
-            cell.thumbnailUrl = itemIdentifier.thumbnailUrl
+            cell.thumbnailUrl = gif.thumbnailUrl
+            cell.isPinned = gif.isPinned
+            cell.longTapHandler = { [weak self] in
+                self?.viewModel.didLongTap(for: gif)
+            }
             return cell
         }
         
