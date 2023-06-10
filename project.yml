@@ -40,6 +40,9 @@ packages:
   SHUserDefaultsPersistenceService:
     url: https://github.com/Yabby1997/SHUserDefaultsPersistenceService
     from: 0.2.1
+  GIFPediaPresentationLayer:
+    url: https://github.com/Yabby1997/GIFPediaPresentationLayer
+    from: 0.1.0
 
 targets:
   GIFPedia:
@@ -92,3 +95,5 @@ targets:
         product: PinnedGIFPersistence
       - package: SHUserDefaultsPersistenceService
         product: SHUserDefaultsPersistenceService
+      - package: GIFPediaPresentationLayer
+        product: GIFPediaPresentationLayer

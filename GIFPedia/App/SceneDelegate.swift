@@ -12,6 +12,7 @@ import GiphyRepository
 import SHURLSessionNetworkService
 import PinnedGIFPersistence
 import SHUserDefaultsPersistenceService
+import GIFPediaPresentationLayer
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 

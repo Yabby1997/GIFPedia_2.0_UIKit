@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 import Nuke
 import FLAnimatedImage
+import GIFPediaPresentationLayer
 
 final class GIFDetailViewController: UIViewController {
 
@@ -20,20 +21,24 @@ final class GIFDetailViewController: UIViewController {
         return imageView
     }()
 
+    private let doubleTapGesture = UITapGestureRecognizer()
+
+    private let pinIconView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleToFill
+        imageView.image = .init(systemName: "pin.fill")
+        imageView.tintColor = .red
+        imageView.isHidden = true
+        return imageView
+    }()
+
     // MARK: - Properties
 
-    private let gif: GIF
-
-    // MARK: - Initializers
-
-    init(gif: GIF) {
-        self.gif = gif
-        super.init(nibName: nil, bundle: nil)
+    var gif: GIF? {
+        didSet { reloadGif() }
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    var doubleTapHandler: ((GIF) -> Void)?
 
     // MARK: - Lifecycle Callbacks
 
@@ -45,17 +50,34 @@ final class GIFDetailViewController: UIViewController {
     // MARK: - Private Methods
 
     private func setupViews() {
+        doubleTapGesture.numberOfTapsRequired = 2
+        doubleTapGesture.addTarget(self, action: #selector(didDoubleTap))
         view.backgroundColor = .systemBackground
 
-        navigationItem.title = gif.title
-
         view.addSubview(imageView)
+        imageView.addGestureRecognizer(doubleTapGesture)
+        imageView.isUserInteractionEnabled = true
         imageView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
-            make.centerX.width.equalToSuperview()
+            make.center.width.equalToSuperview()
             make.height.equalTo(imageView.snp.width)
         }
 
+        imageView.addSubview(pinIconView)
+        pinIconView.snp.makeConstraints { make in
+            make.width.height.equalTo(60)
+            make.bottom.trailing.equalToSuperview().inset(24)
+        }
+    }
+
+    private func reloadGif() {
+        guard let gif else { return }
+        navigationItem.title = gif.title
         Nuke.loadImage(with: gif.originalUrl, into: imageView)
+        pinIconView.isHidden = !gif.isPinned
+    }
+
+    @objc private func didDoubleTap(_ sender: UIGestureRecognizer) {
+        guard let gif else { return }
+        doubleTapHandler?(gif)
     }
 }

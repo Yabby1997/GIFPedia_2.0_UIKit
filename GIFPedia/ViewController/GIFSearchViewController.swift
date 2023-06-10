@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import Combine
+import GIFPediaPresentationLayer
 
 final class GIFSearchViewController: UIViewController {
     enum Section: Hashable {
@@ -25,6 +26,7 @@ final class GIFSearchViewController: UIViewController {
     }()
 
     private let searchController = UISearchController(searchResultsController: nil)
+    private let gifDetailViewController = GIFDetailViewController()
 
     // MARK: - Dependencies
 
@@ -53,9 +55,9 @@ final class GIFSearchViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel.willAppear()
+        viewModel.onAppear()
     }
-    
+
     // MARK: - Private Methods
 
     private func setupViews() {
@@ -67,6 +69,10 @@ final class GIFSearchViewController: UIViewController {
         searchController.searchBar.delegate = self
         searchController.searchResultsUpdater = self
 
+        gifDetailViewController.doubleTapHandler = { [weak self] gif in
+            self?.viewModel.didDoubleTap(for: gif)
+        }
+
         navigationItem.searchController = searchController
         navigationItem.title = "GIFPedia"
 
@@ -77,9 +83,6 @@ final class GIFSearchViewController: UIViewController {
             guard let cell = cell as? GIFCell else { return nil }
             cell.thumbnailUrl = gif.thumbnailUrl
             cell.isPinned = gif.isPinned
-            cell.longTapHandler = { [weak self] in
-                self?.viewModel.didLongTap(for: gif)
-            }
             return cell
         }
         
@@ -92,17 +95,28 @@ final class GIFSearchViewController: UIViewController {
     }
 
     private func bind() {
-        viewModel.gifsPublisher
-            .receive(on: DispatchQueue.main)
+        viewModel.$gifs
             .sink { [weak self] gifs in
                 self?.applySnapshot(gifs)
             }
             .store(in: &cancellables)
 
-        viewModel.scrollToTopSignalPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.collectionView.setContentOffset(.zero, animated: true)
+        viewModel.$gifs
+            .compactMap { [weak self] gifs -> GIF? in
+                guard let id = self?.gifDetailViewController.gif?.id else { return nil }
+                return gifs.first { $0.id == id }
+            }
+            .sink { [weak self] gif in
+                self?.gifDetailViewController.gif = gif
+            }
+            .store(in: &cancellables)
+
+        viewModel.$scrollTo
+            .compactMap { $0 }
+            .sink { [weak self] target in
+                guard let self,
+                      let indexPath = self.dataSource?.indexPath(for: target) else { return }
+                self.collectionView.scrollToItem(at: indexPath, at: .top, animated: true)
             }
             .store(in: &cancellables)
     }
@@ -119,7 +133,7 @@ final class GIFSearchViewController: UIViewController {
 
 extension GIFSearchViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        viewModel.didUpdateQuery(text: searchController.searchBar.text)
+        viewModel.queryText = searchController.searchBar.text ?? ""
     }
 }
 
@@ -132,14 +146,14 @@ extension GIFSearchViewController: UISearchBarDelegate {
 extension GIFSearchViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let gif = dataSource?.itemIdentifier(for: indexPath) else { return }
-        let gifDetailViewController = GIFDetailViewController(gif: gif)
+        gifDetailViewController.gif = gif
         navigationController?.pushViewController(gifDetailViewController, animated: true)
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        viewModel.didScrollTo(
-            bottomOffset: scrollView.contentSize.height - scrollView.frame.size.height - scrollView.contentOffset.y
-        )
+        guard let indexPath = collectionView.indexPathForItem(at: scrollView.contentOffset),
+              let gif = dataSource?.itemIdentifier(for: indexPath) else { return }
+        viewModel.didScroll(to: gif)
     }
 }
 

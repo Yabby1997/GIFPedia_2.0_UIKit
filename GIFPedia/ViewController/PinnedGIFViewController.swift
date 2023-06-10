@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import Combine
+import GIFPediaPresentationLayer
 
 final class PinnedGIFViewController: UIViewController {
     enum Section: Hashable {
@@ -23,6 +24,8 @@ final class PinnedGIFViewController: UIViewController {
         collectionView.register(GIFCell.self, forCellWithReuseIdentifier: GIFCell.identifier)
         return collectionView
     }()
+
+    private let gifDetailViewController = GIFDetailViewController()
 
     // MARK: - Dependencies
 
@@ -51,7 +54,7 @@ final class PinnedGIFViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel.willAppear()
+        viewModel.onAppear()
     }
 
     // MARK: - Private Methods
@@ -60,16 +63,17 @@ final class PinnedGIFViewController: UIViewController {
         view.backgroundColor = .systemBackground
         navigationItem.title = "GIFPedia"
 
+        gifDetailViewController.doubleTapHandler = { [weak self] gif in
+            self?.viewModel.didDoubleTap(for: gif)
+        }
+
         dataSource = UICollectionViewDiffableDataSource<Section, GIF>(
             collectionView: collectionView
         ) { collectionView, indexPath, gif in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GIFCell.identifier, for: indexPath)
-            guard let cell = cell as? GIFCell else { return nil }
+            guard let cell = cell as? GIFCell else { return cell }
             cell.thumbnailUrl = gif.thumbnailUrl
             cell.isPinned = gif.isPinned
-            cell.longTapHandler = { [weak self] in
-                self?.viewModel.didLongTap(for: gif)
-            }
             return cell
         }
 
@@ -82,12 +86,22 @@ final class PinnedGIFViewController: UIViewController {
     }
 
     private func bind() {
-        viewModel.gifsPublisher
-            .receive(on: DispatchQueue.main)
+        viewModel.$gifs
             .sink { [weak self] gifs in
                 self?.applySnapshot(gifs)
             }
             .store(in: &cancellables)
+
+        viewModel.$gifs
+            .compactMap { [weak self] gifs -> GIF? in
+                guard let id = self?.gifDetailViewController.gif?.id else { return nil }
+                return gifs.first { $0.id == id }
+            }
+            .sink { [weak self] gif in
+                self?.gifDetailViewController.gif = gif
+            }
+            .store(in: &cancellables)
+
     }
 
     private func applySnapshot(_ gifs: [GIF]) {
@@ -103,7 +117,7 @@ final class PinnedGIFViewController: UIViewController {
 extension PinnedGIFViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let gif = dataSource?.itemIdentifier(for: indexPath) else { return }
-        let gifDetailViewController = GIFDetailViewController(gif: gif)
+        gifDetailViewController.gif = gif
         navigationController?.pushViewController(gifDetailViewController, animated: true)
     }
 }

@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 import Nuke
 import FLAnimatedImage
+import GIFPediaPresentationLayer
 
 final class GIFCell: UICollectionViewCell {
     static let identifier = "GIFCell"
@@ -30,8 +31,6 @@ final class GIFCell: UICollectionViewCell {
         return imageView
     }()
 
-    private let longTapGesture = UILongPressGestureRecognizer()
-
     // MARK: - Properties
 
     var thumbnailUrl: URL? {
@@ -46,8 +45,6 @@ final class GIFCell: UICollectionViewCell {
             pinIconView.isHidden = !isPinned
         }
     }
-
-    var longTapHandler: (() -> Void)?
 
     // MARK: - Initializers
 
@@ -71,9 +68,6 @@ final class GIFCell: UICollectionViewCell {
     // MARK: - Private Methods
 
     private func setupViews() {
-        longTapGesture.addTarget(self, action: #selector(didLongTap))
-        contentView.addGestureRecognizer(longTapGesture)
-
         contentView.addSubview(imageView)
         imageView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -84,10 +78,5 @@ final class GIFCell: UICollectionViewCell {
             make.width.height.equalTo(30)
             make.bottom.trailing.equalToSuperview().inset(12)
         }
-    }
-
-    @objc private func didLongTap(_ sender: UIGestureRecognizer) {
-        guard sender.state == .ended else { return }
-        longTapHandler?()
     }
 }
