@@ -18,6 +18,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
+    // https://developers.giphy.com/dashboard/?create=true
+    private let giphyAPIKey = "ENTER_YOUR_GIPHY_API_KEY_FROM_ABOVE_LINK"
+
+    // https://developers.google.com/tenor/guides/quickstart#:~:text=login-,Get%20a,Tenor%20API%20key,-You%20can%20sign
+    private let tenorAPIKey = "ENTER_YOUR_TENOR_API_KEY_FROM_ABOVE_LINK"
+
     private var gifPinService: GIFFlagService = {
         let persistenceService = SHUserDefaultsPersistenceService()
         let pinnedGIFPersistence = PinnedGIFPersistence(persistenceService: persistenceService)
@@ -28,7 +34,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let networkService = SHURLSessionNetworkService()
         let giphyRepository = GiphyRepository(
             networkService: networkService,
-            apiKey: "7FckdoA95APjXjzIPCRm9he4wpaa6DFC"
+            apiKey: giphyAPIKey
         )
         let gifPediaSearchService = GIFPediaSearchService(gifRepository: giphyRepository)
         let gifSearchViewModel = GIFSearchViewModel(searchService: gifPediaSearchService, pinService: gifPinService)
@@ -46,7 +52,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let networkService = SHURLSessionNetworkService()
         let tenorRepository = TenorRepository(
             networkService: networkService,
-            apiKey: "AIzaSyAyqL6ZgYRj60GIMveovpSLqAsmyGp2BRE"
+            apiKey: tenorAPIKey
         )
         let gifPediaSearchService = GIFPediaSearchService(gifRepository: tenorRepository)
         let gifSearchViewModel = GIFSearchViewModel(searchService: gifPediaSearchService, pinService: gifPinService)
