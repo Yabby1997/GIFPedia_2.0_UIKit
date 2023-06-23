@@ -61,13 +61,19 @@ targets:
         UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UIApplicationSupportsIndirectInputEvents: YES
+        UILaunchStoryboardName: LaunchScreen
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: YES
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication: [
+                {
+                    UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate,
+                    UISceneConfigurationName: Default Configuration
+                }
+            ]
         LSRequiresIPhoneOS: YES
         CFBundleExecutable: $(EXECUTABLE_NAME)
         CFBundlePackageType: $(PRODUCT_BUNDLE_PACKIAGE_TYPE)
-        UILaunchScreen:
-          UILaunchScreen:
         CFBundleDevelopmentRegion: $(DEVELOPMENT_LANGUAGE)
         CFBundleShortVersionString: $(MARKETING_VERSION)
     settings:

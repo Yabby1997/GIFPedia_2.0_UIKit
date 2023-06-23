@@ -23,12 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         configurationForConnecting connectingSceneSession: UISceneSession,
         options: UIScene.ConnectionOptions
     ) -> UISceneConfiguration {
-        let config = UISceneConfiguration(
-            name: nil,
-           sessionRole: connectingSceneSession.role
-        )
-        config.delegateClass = SceneDelegate.self
-        return config
+        UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
     func application(
